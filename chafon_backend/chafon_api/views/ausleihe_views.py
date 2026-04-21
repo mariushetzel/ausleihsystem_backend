@@ -73,7 +73,8 @@ def ausleihe_detail(request, ausleihe_id):
             success, result = AusleiheService.quittiere_rueckgabe(
                 request, 
                 ausleihe_id,
-                schadensmeldung=data.get('schadensmeldung')
+                zustand=data.get('zustand', 'gut'),
+                kommentar=data.get('kommentar') or data.get('schadensmeldung', '')
             )
         elif aktion == 'ware_verschwunden':
             success, result = AusleiheService.markiere_als_verschwunden(request, ausleihe_id)

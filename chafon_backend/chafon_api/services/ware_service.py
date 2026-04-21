@@ -2,7 +2,7 @@
 Ware Service für Warenverwaltung.
 """
 from typing import Optional, Tuple, List
-from ..models import Benutzer
+from ..models import Benutzer, Ausleihe
 from ..repositories import WareRepository, BenutzerRepository
 from ..utils.helpers import log_action
 
@@ -161,4 +161,28 @@ class WareService:
         if benutzer:
             erlaubte_orte = [o.name for o in ware.get_erlaubte_verbleib_orte(benutzer.rolle)]
         
-        return WareRepository.to_dict(ware, erlaubte_orte=erlaubte_orte)
+        result = WareRepository.to_dict(ware, erlaubte_orte=erlaubte_orte)
+        
+        # Aktuelle Ausleihe laden falls vorhanden
+        if ware.ist_ausgeliehen:
+            aktuelle_ausleihe = Ausleihe.objects.filter(
+                ware=ware,
+                status__in=['aktiv', 'rueckgabe_beantragt']
+            ).select_related('benutzer').first()
+            
+            if aktuelle_ausleihe:
+                result['aktuelle_ausleihe'] = {
+                    'id': str(aktuelle_ausleihe.id),
+                    'benutzer_name': f"{aktuelle_ausleihe.benutzer.vorname} {aktuelle_ausleihe.benutzer.nachname}",
+                    'benutzer_email': aktuelle_ausleihe.benutzer.email,
+                    'verbleib_ort': aktuelle_ausleihe.verbleib_ort,
+                    'geplante_rueckgabe': aktuelle_ausleihe.geplante_rueckgabe.isoformat() if aktuelle_ausleihe.geplante_rueckgabe else None,
+                    'ausgeliehen_am': aktuelle_ausleihe.ausgeliehen_am.isoformat() if aktuelle_ausleihe.ausgeliehen_am else None,
+                    'status': aktuelle_ausleihe.status,
+                }
+            else:
+                result['aktuelle_ausleihe'] = None
+        else:
+            result['aktuelle_ausleihe'] = None
+        
+        return result

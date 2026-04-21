@@ -101,9 +101,11 @@ class BenutzerService:
         
         current_user_level = get_role_level(request.user_role)
         target_user_level = get_role_level(benutzer.rolle)
+        is_own_profile = str(benutzer.id) == str(request.user_id)
         
-        # Man darf nur Benutzer bearbeiten mit niedrigerer Rolle
-        if target_user_level >= current_user_level:
+        # Jeder darf sein eigenes Profil bearbeiten
+        # Für andere Benutzer: nur Benutzer mit niedrigerer Rolle bearbeiten
+        if not is_own_profile and target_user_level >= current_user_level:
             return False, {'error': 'Keine Berechtigung diesen Benutzer zu bearbeiten'}
         
         # Neue Rolle prüfen

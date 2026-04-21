@@ -124,8 +124,8 @@ class AusleiheService:
         if not ausleihe:
             return False, {'error': 'Ausleihe nicht gefunden'}
         
-        # Berechtigung prüfen (nur eigene Ausleihe oder Laborleiter+)
-        if str(ausleihe.benutzer.id) != request.user_id and request.user_role not in ['Laborleiter', 'Admin']:
+        # Berechtigung prüfen (nur eigene Ausleihe oder Mitarbeiter+)
+        if str(ausleihe.benutzer.id) != request.user_id and request.user_role not in ['Mitarbeiter', 'Laborleiter', 'Admin']:
             return False, {'error': 'Keine Berechtigung'}
         
         AusleiheRepository.update_status(ausleihe, 'rueckgabe_beantragt')
@@ -138,7 +138,8 @@ class AusleiheService:
     def quittiere_rueckgabe(
         request,
         ausleihe_id: str,
-        schadensmeldung: str = None
+        zustand: str = 'gut',
+        kommentar: str = ''
     ) -> Tuple[bool, dict]:
         """
         Quittiert die Rückgabe einer Ausleihe.
@@ -147,17 +148,24 @@ class AusleiheService:
         if not ausleihe:
             return False, {'error': 'Ausleihe nicht gefunden'}
         
-        # Nur Laborleiter+ dürfen quittieren
-        if request.user_role not in ['Laborleiter', 'Admin']:
-            return False, {'error': 'Nur Laborleiter oder Admin können Rückgaben quittieren'}
+        # Mitarbeiter+ dürfen quittieren
+        if request.user_role not in ['Mitarbeiter', 'Laborleiter', 'Admin']:
+            return False, {'error': 'Nur Mitarbeiter oder höher können Rückgaben quittieren'}
         
-        AusleiheRepository.complete_return(ausleihe, schadensmeldung)
+        # Genehmigenden Benutzer laden
+        genehmigt_von = BenutzerRepository.get_by_id(request.user_id)
         
-        log_action(request, 'rueckgabe_quittiert', ware=ausleihe.ware, ausleihe=ausleihe, details={
-            'schadensmeldung': schadensmeldung
-        })
+        # Ausleihe abschliessen (erstellt auch AusleiheHistorie)
+        success = ausleihe.schliesse_ab(genehmigt_von, zustand, kommentar)
         
-        return True, {'success': True, 'message': 'Rückgabe quittiert'}
+        if success:
+            log_action(request, 'rueckgabe_quittiert', ware=ausleihe.ware, ausleihe=ausleihe, details={
+                'zustand': zustand,
+                'kommentar': kommentar
+            })
+            return True, {'success': True, 'message': 'Rückgabe quittiert'}
+        else:
+            return False, {'error': 'Ausleihe konnte nicht abgeschlossen werden'}
     
     @staticmethod
     def markiere_als_verschwunden(request, ausleihe_id: str) -> Tuple[bool, dict]:
@@ -168,8 +176,8 @@ class AusleiheService:
         if not ausleihe:
             return False, {'error': 'Ausleihe nicht gefunden'}
         
-        if request.user_role not in ['Laborleiter', 'Admin']:
-            return False, {'error': 'Nur Laborleiter oder Admin'}
+        if request.user_role not in ['Mitarbeiter', 'Laborleiter', 'Admin']:
+            return False, {'error': 'Nur Mitarbeiter oder höher'}
         
         AusleiheRepository.update_status(ausleihe, 'verschwunden')
         
