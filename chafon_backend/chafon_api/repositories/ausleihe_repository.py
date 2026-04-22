@@ -39,8 +39,11 @@ class AusleiheRepository:
     
     @staticmethod
     def get_with_prefetch() -> QuerySet[Ausleihe]:
-        """Gibt Ausleihen mit vorab geladenen Related-Objekten zurück."""
-        return Ausleihe.objects.filter(aktiv=True).select_related(
+        """Gibt aktive Ausleihen mit vorab geladenen Related-Objekten zurück."""
+        return Ausleihe.objects.filter(
+            aktiv=True,
+            status__in=['aktiv', 'rueckgabe_beantragt']
+        ).select_related(
             'ware', 'benutzer'
         ).prefetch_related('ware__kategorien')
     
