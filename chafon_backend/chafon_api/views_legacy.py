@@ -1518,6 +1518,7 @@ def historie_liste(request):
     # Filter
     ware_id = request.query_params.get('ware_id')
     benutzer_id = request.query_params.get('benutzer_id')
+    meine = request.query_params.get('meine') == 'true'
     
     historie = AusleiheHistorie.objects.all()
     
@@ -1526,7 +1527,11 @@ def historie_liste(request):
     if benutzer_id:
         historie = historie.filter(benutzer_id=benutzer_id)
     
-    # Studenten sehen nur ihre eigene Historie
+    # "Meine" Historie = nur eigene Eintraege
+    if meine:
+        historie = historie.filter(benutzer_id=request.user_id)
+    
+    # Studenten sehen nur ihre eigene Historie (zusaetzliche Sicherheit)
     if request.user_role == 'Student':
         historie = historie.filter(benutzer_id=request.user_id)
     
