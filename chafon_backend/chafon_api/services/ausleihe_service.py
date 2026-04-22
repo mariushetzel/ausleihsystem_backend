@@ -16,7 +16,8 @@ class AusleiheService:
         user_id: str,
         user_role: str,
         status_filter: str = None,
-        meine_only: bool = False
+        meine_only: bool = False,
+        benutzer_id: str = None
     ) -> List[dict]:
         """
         Holt die Liste der Ausleihen.
@@ -27,6 +28,9 @@ class AusleiheService:
         # Filter anwenden
         if meine_only:
             ausleihen = ausleihen.filter(benutzer_id=user_id)
+        
+        if benutzer_id:
+            ausleihen = ausleihen.filter(benutzer_id=benutzer_id)
         
         if status_filter:
             ausleihen = AusleiheRepository.filter_by_status(ausleihen, status_filter)

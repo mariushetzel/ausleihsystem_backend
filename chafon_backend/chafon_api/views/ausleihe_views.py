@@ -17,12 +17,14 @@ def ausleihen_liste(request):
     if request.method == 'GET':
         status_filter = request.query_params.get('status')
         meine = request.query_params.get('meine') == 'true'
+        benutzer_id = request.query_params.get('benutzer_id')
         
         data = AusleiheService.get_ausleihen_liste(
             user_id=request.user_id,
             user_role=request.user_role,
             status_filter=status_filter,
-            meine_only=meine
+            meine_only=meine,
+            benutzer_id=benutzer_id
         )
         
         return Response(data)
