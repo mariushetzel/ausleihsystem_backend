@@ -55,7 +55,7 @@ def waren_liste(request):
         )
         
         if not success:
-            return Response(result, status=403 if 'Nur Laborleiter' in result.get('error', '') else 400)
+            return Response(result, status=403 if 'Nur Mitarbeiter' in result.get('error', '') else 400)
         
         return Response(result, status=201)
 

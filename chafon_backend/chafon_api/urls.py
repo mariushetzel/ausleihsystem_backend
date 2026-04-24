@@ -13,6 +13,7 @@ from .views import (
     benutzer_views,
     ware_views,
     ausleihe_views,
+    statistik_views,
 )
 
 # Alte Views (für nicht migrierte Endpunkte)
@@ -47,6 +48,11 @@ urlpatterns = [
     # =============================================================================
     path('ausleihen/', ausleihe_views.ausleihen_liste, name='ausleihen_liste'),
     path('ausleihen/<uuid:ausleihe_id>/', ausleihe_views.ausleihe_detail, name='ausleihe_detail'),
+    
+    # =============================================================================
+    # STATISTIKEN (neue Views)
+    # =============================================================================
+    path('statistiken/', statistik_views.statistiken_liste, name='statistiken_liste'),
     
     # =============================================================================
     # KATEGORIEN (alte Views - noch nicht migriert)

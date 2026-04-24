@@ -968,9 +968,9 @@ def kategorien_liste(request):
         return Response(data)
     
     elif request.method == 'POST':
-        # Nur Laborleiter+ dürfen Kategorien erstellen
-        if request.user_role not in ['Laborleiter', 'Admin']:
-            return Response({'error': 'Nur Laborleiter oder Admin'}, status=403)
+        # Nur Mitarbeiter+ dürfen Kategorien erstellen
+        if request.user_role not in ['Mitarbeiter', 'Laborleiter', 'Admin']:
+            return Response({'error': 'Nur Mitarbeiter, Laborleiter oder Admin'}, status=403)
         
         data = request.data
         name = data.get('name', '').strip()
@@ -1034,9 +1034,9 @@ def kategorien_liste(request):
 @jwt_required
 def kategorie_detail(request, kategorie_id):
     """Einzelne Kategorie bearbeiten oder deaktivieren."""
-    # Nur Laborleiter+ dürfen Kategorien verwalten
-    if request.user_role not in ['Laborleiter', 'Admin']:
-        return Response({'error': 'Nur Laborleiter oder Admin'}, status=403)
+    # Nur Mitarbeiter+ dürfen Kategorien verwalten
+    if request.user_role not in ['Mitarbeiter', 'Laborleiter', 'Admin']:
+        return Response({'error': 'Nur Mitarbeiter, Laborleiter oder Admin'}, status=403)
     
     try:
         kategorie = Warenkategorie.objects.get(id=kategorie_id, aktiv=True)
@@ -1951,7 +1951,7 @@ def set_device_para(request):
 
 @api_view(['POST'])
 @jwt_required
-@require_role(['Laborleiter', 'Admin'])
+@require_role(['Mitarbeiter', 'Laborleiter', 'Admin'])
 def reboot_device(request):
     """RFID-Antenne rebooten - nur Laborleiter/Admin."""
     # Prüfe Hardware-Lock
@@ -2167,9 +2167,9 @@ def kategorie_verbleib_regel(request):
     PUT: Bestehende Regel aktualisieren
     DELETE: Regel löschen (zurücksetzen auf Standard)
     """
-    # Nur Laborleiter+ dürfen Regeln verwalten
-    if request.user_role not in ['Laborleiter', 'Admin']:
-        return Response({'error': 'Nur Laborleiter oder Admin'}, status=403)
+    # Nur Mitarbeiter+ dürfen Regeln verwalten
+    if request.user_role not in ['Mitarbeiter', 'Laborleiter', 'Admin']:
+        return Response({'error': 'Nur Mitarbeiter, Laborleiter oder Admin'}, status=403)
     
     data = request.data
     kategorie_id = data.get('kategorie_id')
@@ -2643,7 +2643,7 @@ def system_einstellung_detail(request, schluessel):
 
 @api_view(['POST', 'PUT'])
 @jwt_required
-@require_role(['Laborleiter', 'Admin'])
+@require_role(['Mitarbeiter', 'Laborleiter', 'Admin'])
 def system_einstellung_aktualisieren(request):
     """
     Aktualisiert oder erstellt System-Einstellungen.

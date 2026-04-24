@@ -81,8 +81,8 @@ class WareService:
         Erstellt eine neue Ware.
         """
         # Berechtigungsprüfung
-        if request.user_role not in ['Laborleiter', 'Admin']:
-            return False, {'error': 'Nur Laborleiter oder Admin'}
+        if request.user_role not in ['Mitarbeiter', 'Laborleiter', 'Admin']:
+            return False, {'error': 'Nur Mitarbeiter, Laborleiter oder Admin'}
         
         ware = WareRepository.create(
             name=name,
